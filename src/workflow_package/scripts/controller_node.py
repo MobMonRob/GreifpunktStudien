@@ -3,7 +3,11 @@ from platform import node
 import rclpy
 from rclpy.node import Node
 
+#import service types
 from workflow_package.srv import CheckPartPresence as CheckPart
+from workflow_package.srv import CheckLabelPresence as CheckLabel
+from workflow_package.srv import GetGraspPoints as GetGraspPoints
+from workflow_package.srv import MoveToPosition as MoveToPosition
 
 class ControllerNode(Node):
     def __init__(self):
@@ -17,10 +21,32 @@ class ControllerNode(Node):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Service not available, waiting again...')
 
-
+    # define functions to call services here
     def send_request_part_presence(self,request_start: bool):
         req = CheckPart.Request()
         req.request_scanning_for_parts = request_start
+        self.future = self.cli.call_async(req)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
+    
+    def send_request_label_presence(self,request_start: bool):
+        req = CheckLabel.Request()
+        req.request_scanning_for_labels = request_start
+        self.future = self.cli.call_async(req)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
+    
+    def send_request_grasp_points(self,request_start: bool):
+        req = GetGraspPoints.Request()
+        req.request_grasp_points = request_start
+        self.future = self.cli.call_async(req)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
+    
+    def send_request_move_to_position(self,request_start: bool, position_coordinates: list):
+        req = MoveToPosition.Request()
+        req.request_move_to_position = request_start
+        req.request_target_position = position_coordinates
         self.future = self.cli.call_async(req)
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
