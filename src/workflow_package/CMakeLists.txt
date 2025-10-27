@@ -14,7 +14,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/CheckPartPresence.srv"
   "srv/CheckLabelPresence.srv"
-  "srv/GetGraspPoints.srv"
+  "srv/GetGraspPoint.srv"
   "srv/MoveToPosition.srv"
   # Weitere .srv oder .msg Dateien hier hinzufügen
 )
@@ -24,7 +24,7 @@ install(PROGRAMS
   scripts/controller_node.py
   scripts/check_part_presence_server.py
   scripts/check_label_presence_server.py
-  scripts/get_grasp_points_server.py
+  scripts/get_grasp_point_server.py
   scripts/move_to_position_server.py
   DESTINATION lib/${PROJECT_NAME}
 )
