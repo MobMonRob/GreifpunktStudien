@@ -6,7 +6,7 @@ from rclpy.node import Node
 #import service types
 from workflow_package.srv import CheckPartPresence as CheckPart
 from workflow_package.srv import CheckLabelPresence as CheckLabel
-from workflow_package.srv import GetGraspPoints as GetGraspPoints
+from workflow_package.srv import GetGraspPoint as GetGraspPoint
 from workflow_package.srv import MoveToPosition as MoveToPosition
 
 class ControllerNode(Node):
@@ -37,7 +37,7 @@ class ControllerNode(Node):
         return self.future.result()
     
     def send_request_grasp_points(self,request_start: bool):
-        req = GetGraspPoints.Request()
+        req = GetGraspPoint.Request()
         req.request_grasp_points = request_start
         self.future = self.cli.call_async(req)
         rclpy.spin_until_future_complete(self, self.future)
@@ -63,6 +63,7 @@ def main(args=None):
         node.get_logger().info('Parts are present.')
     else:
         node.get_logger().info('No parts found.')
+
 
     #rclpy.spin(controller_node)
     node.destroy_node()
