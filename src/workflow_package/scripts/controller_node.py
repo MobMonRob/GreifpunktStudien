@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from platform import node
+import time
 import rclpy
 from rclpy.node import Node
 
@@ -58,6 +59,8 @@ def main(args=None):
     node = ControllerNode()
 
     request_Flag = True
+    print("Requesting part presence check...")
+    time.sleep(2)
     result = node.send_request_part_presence(request_Flag)
     if result.response_parts_present:
         node.get_logger().info('Parts are present.')

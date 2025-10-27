@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 import rclpy
 from rclpy.node import Node
 from workflow_package.srv import CheckPartPresence as CheckPart
@@ -16,6 +17,7 @@ class CheckPartServer(Node):
         if request.request_scanning_for_parts == True:
             for i in range(5):
                 print("Checking for part...")  # Simulate checking process
+                time.sleep(1)
             response.response_parts_present = True  # Example response
         return response
 
