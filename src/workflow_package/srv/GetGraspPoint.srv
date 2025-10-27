@@ -1,0 +1,4 @@
+bool request_getting_grasp_point
+---
+bool response_grasp_point_found
+float64[6] response_grasp_point_coordinates
