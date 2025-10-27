@@ -42,10 +42,11 @@ class ControllerNode(Node):
         self.future = self.cli.call_async(req)
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
-    
-    def send_request_move_to_position(self,request_start: bool, position_coordinates: list):
+
+    def send_request_move_to_position(self,request_start: bool, request_position_name: str, position_coordinates: list):
         req = MoveToPosition.Request()
         req.request_move_to_position = request_start
+        req.request_position_name = request_position_name
         req.request_target_position = position_coordinates
         self.future = self.cli.call_async(req)
         rclpy.spin_until_future_complete(self, self.future)
