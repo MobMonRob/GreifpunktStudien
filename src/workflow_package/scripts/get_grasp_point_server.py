@@ -2,6 +2,7 @@
 import rclpy
 from rclpy.node import Node
 from workflow_package.srv import GetGraspPoints as GetGraspPoints
+
 class GetGraspPointServer(Node):
     def __init__(self):
         super().__init__('get_grasp_point_server')
