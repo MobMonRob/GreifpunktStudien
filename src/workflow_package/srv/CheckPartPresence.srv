@@ -1,0 +1,3 @@
+bool request_scanning_for_parts
+---
+bool response_parts_present

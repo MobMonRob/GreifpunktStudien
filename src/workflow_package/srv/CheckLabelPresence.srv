@@ -1,0 +1,3 @@
+bool request_scanning_for_label
+---
+bool response_label_present

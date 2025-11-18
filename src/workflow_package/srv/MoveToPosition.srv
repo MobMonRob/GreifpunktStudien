@@ -1,0 +1,5 @@
+bool request_move_to_position
+string request_position_name
+float64[6] request_target_position
+---
+bool response_position_reached
