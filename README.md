@@ -1,0 +1,1 @@
+Studienarbeit - Automatisierte Greifpunktermittlung und Produkt Klassifizierung
