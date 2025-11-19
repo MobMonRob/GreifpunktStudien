@@ -60,6 +60,7 @@ def main(args=None):
 
     request_Flag = True
     print("Requesting part presence check...")
+    print("----------------------------------") # added line for better readability
     time.sleep(2)
     result = node.send_request_part_presence(request_Flag)
     if result.response_parts_present:
