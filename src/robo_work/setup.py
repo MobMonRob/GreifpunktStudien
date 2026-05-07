@@ -24,6 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'service = robo_work.service_member_function:main',
+            'client = robo_work.client_member_function:main',
         ],
     },
 )
