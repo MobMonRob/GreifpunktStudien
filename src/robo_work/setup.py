@@ -14,7 +14,7 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='lukas',
-    maintainer_email='luk.brenneisen@web.de',
+    maintainer_email='XX',
     description='TODO: Package description',
     license='Apache-2.0',
     extras_require={
@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'service = robo_work.service_member_function:main',
             'client = robo_work.client_member_function:main',
+            'is_part_present_service = robo_work.service_part_present:main'
         ],
     },
 )
