@@ -4,7 +4,7 @@ from example_interfaces.srv import AddTwoInts
 from robo_work_msg.srv import IsPartPresent
 import rclpy
 from rclpy.node import Node
-
+import requests
 
 class MinimalClientAsync(Node):
 
@@ -31,6 +31,14 @@ class PartChecker(Node):
     def ask_if_part_there(self, start_check_for_part):
         self.req.start_check_for_part = start_check_for_part
         return self.cli.call_async(self.req)
+    
+    ## Test um mit anderen Laptops zu kommunizieren --> später wo anders hin
+    def abfrage_ablage(self, start):
+        if start == True:
+            antwortablage = requests.get('http://192.168.2.230:5001/check_part')
+            data = antwortablage.json()
+            print(data)
+            return data
 
 
 def main():
@@ -49,7 +57,11 @@ def main():
     rclpy.spin_until_future_complete(part_checker, bauteilda)
     antwort = bauteilda.result()
     part_checker.get_logger().info('Bauteil ist da? ' + str(antwort))
-   
+    
+    ## Test: mit anderen Laptops im LAN kommunizieren
+    #antwort = part_checker.abfrage_ablage(True)
+    #part_checker.get_logger().info('Liegt da ein Bauteil? ' + str(antwort))
+
     minimal_client.destroy_node()
     part_checker.destroy_node()
     
