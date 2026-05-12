@@ -20,7 +20,8 @@ class CheckLabelService(Node):
         self.get_logger().info('Starte Label Check.')
         
         # Fahre zur CheckPosition
-        
+        if request == True:
+            print('Fahre blabla')
 
         # Sende Signal an Label Check Laptop --> schauen wegen der Bewegung, ggf. erstmal statisch??
         #startCheckLabel = requests.get('http://IPXX/DetectLabel')
