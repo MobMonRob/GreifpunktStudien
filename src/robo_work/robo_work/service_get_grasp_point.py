@@ -3,6 +3,9 @@
 # srv import
 from robo_work_msg.srv import getGraspPoint
 
+# Python Imports
+import requests
+
 # übliche imports
 import rclpy 
 from rclpy.node import Node
@@ -13,19 +16,22 @@ class GetGraspPointService(Node):
         super().__init__('get_grasp_point_service')
         self.srv = self.create_service(getGraspPoint, 'get_grasp_point', self.get_grasp_point_callback)
 
-    def get_grasp_point_callback(self, request, response1, response2):
+    def get_grasp_point_callback(self, request, response):
         if request.start_detect_grasp_point == True:
             self.get_logger().info('Starte Greifpunkt Bestimmung.')
             # Fahre zu Start Position:
 
             # Sende Signal an HappyPose Laptop
-            
-            # Antwort zurückgeben
-            response1.grasp_point_detected == True
-            graspPointsTest = [1,2,3,4,5,6]
-            response2.grasp_points == graspPointsTest
+            #startDetectGraspPoint = requests.get('http://IPXX/DetectGraspPoint')
+            #graspPoint = startDetectGraspPoint.json() # antwort noch korrekt formatieren
+            graspPointDummy = [1,2,3,4,5,6]
 
-            return response1,response2
+            # Antwort zurückgeben
+            graspPointsTest = graspPointDummy
+            response.grasp_point_detected = True # detection was sucess
+            response.grasp_points = graspPointsTest # greifpunkt speichern
+
+            return response  # beide antworten zurückgeben
 
 def main():
     rclpy.init()

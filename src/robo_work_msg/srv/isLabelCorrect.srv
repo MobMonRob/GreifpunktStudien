@@ -1,0 +1,4 @@
+bool start_detect_label
+---
+bool label_classification
+bool start_sorting_bottle
