@@ -17,7 +17,7 @@ from robo_work.rebel_mover import RebelMover
 #-------------------- Service Node ---------------------------------------
 # service klasse
 class CheckLabelService(Node):
-    def __init__(self):
+    def __init__(self, mover):
         super().__init__('check_label_service')
         self.srv = self.create_service(IsLabelCorrect, 'check_label', self.check_label_callback)
 

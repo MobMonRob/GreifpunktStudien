@@ -15,7 +15,7 @@ from robo_work.rebel_mover import RebelMover
 
 #------------- service klasse ------------------------------
 class GetGraspPointService(Node):
-    def __init__(self):
+    def __init__(self,mover):
         super().__init__('get_grasp_point_service')
         self.srv = self.create_service(GetGraspPoint, 'get_grasp_point', self.get_grasp_point_callback)
 

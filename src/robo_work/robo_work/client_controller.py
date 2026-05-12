@@ -34,7 +34,7 @@ class RoboController(Node):
         future = self.cli_label.call_async(req)
         rclpy.spin_until_future_complete(self, future)
         result = future.result()
-        if not future.result().label_correct:
+        if not future.result().label_classification:
             self.get_logger().info('Label falsch.')
             return
 

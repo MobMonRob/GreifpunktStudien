@@ -13,7 +13,7 @@ from robo_work.rebel_mover import RebelMover
 
 # service klasse erstellen
 class IsPartPresentService(Node):
-    def __init__(self):
+    def __init__(self,mover):
         super().__init__('is_part_present_service')
         #Datentyp vom service (srv von oben), service name, callback
         self.srv = self.create_service(IsPartPresent, 'is_part_present',self.is_part_present_callback)
