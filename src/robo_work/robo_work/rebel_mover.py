@@ -33,7 +33,7 @@ class RebelMover(Node):
         return self._send_goal(constraints)
 
     def move_to_home(self):
-        return self.move_to_joint_pos([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.move_to_joint_pos([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
     def move_to_dummy_position(self,joint_angles_deg):
         # funktion zum testen

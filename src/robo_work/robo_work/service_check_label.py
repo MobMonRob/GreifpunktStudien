@@ -19,14 +19,16 @@ from robo_work.rebel_mover import RebelMover
 class CheckLabelService(Node):
     def __init__(self, mover):
         super().__init__('check_label_service')
+        self.mover = mover
         self.srv = self.create_service(IsLabelCorrect, 'check_label', self.check_label_callback)
 
     def check_label_callback(self, request, response):
         self.get_logger().info('Starte Label Check.')
         
         # Fahre zur CheckPosition
-        if request == True:
-            print('Fahre blabla')
+        #dummyPosi = [82,13,82,50,83,-90]
+        #self.mover.move_to_dummy_position(dummyPosi)
+        self.mover.move_to_home()
 
         # Sende Signal an Label Check Laptop --> schauen wegen der Bewegung, ggf. erstmal statisch??
         #startCheckLabel = requests.get('http://IPXX/DetectLabel')

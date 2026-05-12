@@ -17,13 +17,16 @@ from robo_work.rebel_mover import RebelMover
 class GetGraspPointService(Node):
     def __init__(self,mover):
         super().__init__('get_grasp_point_service')
+        self.mover = mover
         self.srv = self.create_service(GetGraspPoint, 'get_grasp_point', self.get_grasp_point_callback)
 
     def get_grasp_point_callback(self, request, response):
         if request.start_detect_grasp_point == True:
             self.get_logger().info('Starte Greifpunkt Bestimmung.')
-            # Fahre zu Start Position:
             
+            # Fahre zu Start Position:
+            dummyPosi = [82,13,82,50,83,-90]
+            self.mover.move_to_dummy_position(dummyPosi)
 
             # Sende Signal an HappyPose Laptop
             #startDetectGraspPoint = requests.get('http://IPXX/DetectGraspPoint')
