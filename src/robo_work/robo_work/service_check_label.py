@@ -1,7 +1,7 @@
 ## Service um zu checken ob das Label der Flasche passt --> über Abfrage von anderen Laptop ##
 
 # srv import
-from robo_work_msg.srv import isLabelCorrect
+from robo_work_msg.srv import IsLabelCorrect
 
 # Python imports
 import requests
@@ -19,7 +19,7 @@ from robo_work.rebel_mover import RebelMover
 class CheckLabelService(Node):
     def __init__(self):
         super().__init__('check_label_service')
-        self.srv = self.create_service(isLabelCorrect, 'check_label', self.check_label_callback)
+        self.srv = self.create_service(IsLabelCorrect, 'check_label', self.check_label_callback)
 
     def check_label_callback(self, request, response):
         self.get_logger().info('Starte Label Check.')
@@ -34,7 +34,7 @@ class CheckLabelService(Node):
         isLabelCorrectDummy = True
         startSortingBottleDummy = True
 
-        response.label_classification = isLabelCorrect
+        response.label_classification = isLabelCorrectDummy
         response.start_sorting_bottle = startSortingBottleDummy
 
         return response

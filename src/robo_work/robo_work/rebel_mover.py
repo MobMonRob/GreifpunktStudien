@@ -35,6 +35,12 @@ class RebelMover(Node):
     def move_to_home(self):
         return self.move_to_joint_pos([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
+    def move_to_dummy_position(self,joint_angles_deg):
+        # funktion zum testen
+        pos = [math.radians(joint_angles_deg[0]), math.radians(joint_angles_deg[1]), math.radians(joint_angles_deg[2]),
+               math.radians(joint_angles_deg[3]), math.radians(joint_angles_deg[4]), math.radians(joint_angles_deg[5])]
+        return self.move_to_joint_pos(pos)
+
     def move_to_label_check_pos(self):
         # funktion anpassen
         pos = [math.radians(0), math.radians(0), math.radians(0),

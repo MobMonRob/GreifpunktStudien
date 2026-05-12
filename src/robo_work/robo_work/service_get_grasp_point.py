@@ -1,7 +1,7 @@
 ## Service um den Greifpunkt zu bestimmen --> über Abfrage von anderen Laptop ##
 
 # srv import
-from robo_work_msg.srv import getGraspPoint
+from robo_work_msg.srv import GetGraspPoint
 
 # Python Imports
 import requests
@@ -17,12 +17,13 @@ from robo_work.rebel_mover import RebelMover
 class GetGraspPointService(Node):
     def __init__(self):
         super().__init__('get_grasp_point_service')
-        self.srv = self.create_service(getGraspPoint, 'get_grasp_point', self.get_grasp_point_callback)
+        self.srv = self.create_service(GetGraspPoint, 'get_grasp_point', self.get_grasp_point_callback)
 
     def get_grasp_point_callback(self, request, response):
         if request.start_detect_grasp_point == True:
             self.get_logger().info('Starte Greifpunkt Bestimmung.')
             # Fahre zu Start Position:
+            
 
             # Sende Signal an HappyPose Laptop
             #startDetectGraspPoint = requests.get('http://IPXX/DetectGraspPoint')
