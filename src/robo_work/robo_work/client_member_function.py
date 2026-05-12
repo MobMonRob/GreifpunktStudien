@@ -35,7 +35,7 @@ class PartChecker(Node):
     ## Test um mit anderen Laptops zu kommunizieren --> später wo anders hin
     def abfrage_ablage(self, start):
         if start == True:
-            antwortablage = requests.get('http://192.168.2.230:5001/check_part')
+            antwortablage = requests.get('http://IPXX/check_part')
             data = antwortablage.json()
             print(data)
             return data
