@@ -1,44 +1,42 @@
 ## Service um zu checken ob das Label der Flasche passt --> über Abfrage von anderen Laptop ##
-
 # srv import
 from robo_work_msg.srv import IsLabelCorrect
-
 # Python imports
 import requests
-
 # übliche imports
 import rclpy
 from rclpy.node import Node
-
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
 # rebel bewegung import
 from robo_work.rebel_mover import RebelMover
 
-
 #-------------------- Service Node ---------------------------------------
-# service klasse
 class CheckLabelService(Node):
     def __init__(self, mover):
         super().__init__('check_label_service')
         self.mover = mover
-        self.srv = self.create_service(IsLabelCorrect, 'check_label', self.check_label_callback)
+        self.cb_group = ReentrantCallbackGroup()
+        self.srv = self.create_service(
+            IsLabelCorrect,
+            'check_label',
+            self.check_label_callback,
+            callback_group=self.cb_group
+        )
 
     def check_label_callback(self, request, response):
         self.get_logger().info('Starte Label Check.')
-        
         # Fahre zur CheckPosition
-        #dummyPosi = [82,13,82,50,83,-90]
-        #self.mover.move_to_dummy_position(dummyPosi)
+        # dummyPosi = [82, 13, 82, 50, 83, -90]
+        # self.mover.move_to_dummy_position(dummyPosi)
         self.mover.move_to_home()
-
-        # Sende Signal an Label Check Laptop --> schauen wegen der Bewegung, ggf. erstmal statisch??
-        #startCheckLabel = requests.get('http://IPXX/DetectLabel')
-        #labelClassification = startDetectGraspPoint.json() # antwort noch korrekt formatieren
+        # Sende Signal an Label Check Laptop
+        # startCheckLabel = requests.get('http://IPXX/DetectLabel')
+        # labelClassification = startCheckLabel.json()
         isLabelCorrectDummy = True
         startSortingBottleDummy = True
-
         response.label_classification = isLabelCorrectDummy
         response.start_sorting_bottle = startSortingBottleDummy
-
         return response
 
 def main():
@@ -46,10 +44,12 @@ def main():
     mover = RebelMover()
     check_label_service = CheckLabelService(mover)
 
-    rclpy.spin(check_label_service)
-    rclpy.shutdown
+    executor = MultiThreadedExecutor()
+    executor.add_node(mover)
+    executor.add_node(check_label_service)
+
+    executor.spin()
+    rclpy.shutdown()  # ← Klammern ergänzt
 
 if __name__ == '__main__':
     main()
-
-        
