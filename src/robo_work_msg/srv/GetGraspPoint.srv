@@ -1,0 +1,4 @@
+bool start_detect_grasp_point
+---
+bool grasp_point_detected
+float64[] grasp_points

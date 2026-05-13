@@ -24,8 +24,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'service = robo_work.service_member_function:main',
-            'client = robo_work.client_member_function:main',
+            'controller = robo_work.client_controller:main',
+            'is_part_present = robo_work.service_part_present:main',
+            'get_grasp_point = robo_work.service_get_grasp_point:main',
+            'check_label = robo_work.service_check_label:main'
         ],
     },
 )
