@@ -29,8 +29,8 @@ class GetGraspPointService(Node):
         if request.start_detect_grasp_point == True:
             self.get_logger().info('Starte Greifpunkt Bestimmung.')
             # Fahre zu Start Position:
-            dummyPosi = [82, 13, 82, 50, 83, -90]
-            time.sleep(3)
+            dummyPosi = [0, -50, 140, 0, 65, 0]
+            time.sleep(20)
             self.mover.move_to_dummy_position(dummyPosi)
             # Sende Signal an HappyPose Laptop
             # startDetectGraspPoint = requests.get('http://IPXX/DetectGraspPoint')
