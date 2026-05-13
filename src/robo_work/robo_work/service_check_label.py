@@ -3,6 +3,7 @@
 from robo_work_msg.srv import IsLabelCorrect
 # Python imports
 import requests
+import time
 # übliche imports
 import rclpy
 from rclpy.node import Node
@@ -27,12 +28,20 @@ class CheckLabelService(Node):
     def check_label_callback(self, request, response):
         self.get_logger().info('Starte Label Check.')
         # Fahre zur CheckPosition
-        # dummyPosi = [82, 13, 82, 50, 83, -90]
-        # self.mover.move_to_dummy_position(dummyPosi)
-        self.mover.move_to_home()
+        dummyPosi = [50, 15, 85, 55, 85, -90]
+        self.mover.move_to_dummy_position(dummyPosi)
+        #self.mover.move_to_home()
         # Sende Signal an Label Check Laptop
         # startCheckLabel = requests.get('http://IPXX/DetectLabel')
         # labelClassification = startCheckLabel.json()
+
+        # Fahre zur Ablage Pos dummy
+        #dummyPosiAbl = [50, 15, 85, 55, 85, -90]
+        #self.mover.move_to_dummy_position(dummyPosiAbl)
+        time.sleep(3)
+        # fahre zu Zero
+        self.mover.move_to_home()
+
         isLabelCorrectDummy = True
         startSortingBottleDummy = True
         response.label_classification = isLabelCorrectDummy

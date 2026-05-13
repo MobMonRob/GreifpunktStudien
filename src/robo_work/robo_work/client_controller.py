@@ -1,6 +1,7 @@
 from robo_work_msg.srv import GetGraspPoint, IsLabelCorrect, IsPartPresent
 import rclpy
 from rclpy.node import Node
+import time
 
 class RoboController(Node):
     def __init__(self):
@@ -27,7 +28,7 @@ class RoboController(Node):
         if not future.result().is_present:
             self.get_logger().info('Kein Bauteil gefunden.')
             return
-
+        time.sleep(1)
         # Label korrekt?
         req = IsLabelCorrect.Request()
         req.start_detect_label = True
@@ -37,7 +38,7 @@ class RoboController(Node):
         if not future.result().label_classification:
             self.get_logger().info('Label falsch.')
             return
-
+        time.sleep(1)
         # Greifpunkt holen
         req = GetGraspPoint.Request()
         req.start_detect_grasp_point = True

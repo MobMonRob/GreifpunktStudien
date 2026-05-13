@@ -3,6 +3,7 @@
 from robo_work_msg.srv import GetGraspPoint
 # Python Imports
 import requests
+import time
 # übliche imports
 import rclpy
 from rclpy.node import Node
@@ -29,11 +30,16 @@ class GetGraspPointService(Node):
             self.get_logger().info('Starte Greifpunkt Bestimmung.')
             # Fahre zu Start Position:
             dummyPosi = [82, 13, 82, 50, 83, -90]
+            time.sleep(3)
             self.mover.move_to_dummy_position(dummyPosi)
             # Sende Signal an HappyPose Laptop
             # startDetectGraspPoint = requests.get('http://IPXX/DetectGraspPoint')
             # graspPoint = startDetectGraspPoint.json()
             graspPointDummy = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+            # test bewegung greifen
+            dummyPosiGreif = [70, 13, 82, 50, 83, -90]
+            time.sleep(3)
+            self.mover.move_to_dummy_position(dummyPosiGreif)
             response.grasp_point_detected = True
             response.grasp_points = graspPointDummy
         return response

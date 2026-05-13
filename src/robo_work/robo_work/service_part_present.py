@@ -27,6 +27,9 @@ class IsPartPresentService(Node):
     # funktion die der service ausführen soll wenn er eine anfrage bekommt
     def is_part_present_callback(self, request, response):
         if request.start_check_for_part == True:
+            # auf allgemeine StartPosition fahren
+            time.sleep(3)
+            self.mover.move_to_home()
             self.get_logger().info('Ich prüfe ob ein Bauteil vorhanden ist..')
             time.sleep(3)
             response.is_present = True
