@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-
+## allgemeeine python datei um den greifer anzusteuern
 
 class RG():
 
