@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="tisch">
+    <static>true</static>
+    <link name="tisch_link">
+      <collision name="tisch_collision">
+        <geometry>
+          <mesh>
+            <uri>file:///home/lukas/GreifpunktStudien/src/igus_rebel_ros2/src/igus_rebel_description/meshes/station/Tisch.stl</uri>
+            <scale>1.0 1.0 1.0</scale>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="tisch_visual">
+        <geometry>
+          <mesh>
+            <uri>file:///home/lukas/GreifpunktStudien/src/igus_rebel_ros2/src/igus_rebel_description/meshes/station/Tisch.stl</uri>
+            <scale>1.0 1.0 1.0</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

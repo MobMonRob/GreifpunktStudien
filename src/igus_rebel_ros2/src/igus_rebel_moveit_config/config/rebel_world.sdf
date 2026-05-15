@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="rebel_world">
+    <!-- Licht -->
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.5 0.5 0.5 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Boden -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+<!-- Tisch / Prozessstation -->
+    <model name="tisch">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="tisch_link">
+        <collision name="tisch_collision">
+          <geometry>
+            <mesh>
+              <uri>file:///home/lukas/GreifpunktStudien/src/igus_rebel_ros2/src/igus_rebel_description/meshes/station/Tisch.stl</uri>
+              <scale>1.0 1.0 1.0</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="tisch_visual">
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+          <geometry>
+            <mesh>
+              <uri>file:///home/lukas/GreifpunktStudien/src/igus_rebel_ros2/src/igus_rebel_description/meshes/station/Tisch.stl</uri>
+              <scale>1.0 1.0 1.0</scale>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>
