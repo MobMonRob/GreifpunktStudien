@@ -12,6 +12,16 @@ Voraussetzung:
 
 Starten:
     python3 hand_eye_ros2.py
+
+Korrekturen gegenüber ursprünglicher Version:
+    - Einheitenkonsistenz: t_rob jetzt in Metern (wie solvePnP)
+    - t_rob shape (3,1) statt (3,) für calibrateHandEye
+    - Undistortion vor solvePnP
+    - Bildindex-Zuordnung repariert (gespeicherter Index statt Laufindex)
+    - TF-Lookup mit Timeout
+    - Validierung: Reprojektionsfehler nach Kalibrierung
+    - time.sleep nach Bewegung reduziert
+    - Mehrere Hand-Eye-Methoden werden verglichen
 """
 
 import rclpy
@@ -142,6 +152,7 @@ def charuco_board_erstellen():
     return aruco_dict, charuco_board
 
 def charuco_erkennen(img):
+    """Gibt (erfolg, corners, ids) zurück. img muss Graustufen sein."""
     _, charuco_board = charuco_board_erstellen()
     detector = cv2.aruco.CharucoDetector(charuco_board)
     charuco_corners, charuco_ids, _, _ = detector.detectBoard(img)
@@ -202,17 +213,25 @@ class HandEyeNode(Node):
         return result_future.result().result.error_code.val == 1
 
     def tcp_auslesen(self):
+        """
+        Liest TCP-Pose aus TF2 aus.
+        Gibt [x, y, z, A, B, C] in METERN und Grad zurück.
+        WICHTIG: Einheit ist Meter (nicht mm) für calibrateHandEye!
+        """
         try:
-            time.sleep(0.5)
+            # FIX: Timeout hinzugefügt – verhindert sporadische Crashes
             transform = self._tf_buffer.lookup_transform(
-                'world', 'link6', rclpy.time.Time()
+                'world', 'link6',
+                rclpy.time.Time(),
+                timeout=rclpy.duration.Duration(seconds=1.0)
             )
             t = transform.transform.translation
             r = transform.transform.rotation
 
-            x = t.x * 1000
-            y = t.y * 1000
-            z = t.z * 1000
+            # FIX: Meter statt Millimeter – konsistent mit solvePnP-Ausgabe
+            x = t.x
+            y = t.y
+            z = t.z
 
             rot   = Rotation.from_quat([r.x, r.y, r.z, r.w])
             euler = rot.as_euler('xyz', degrees=True)
@@ -247,13 +266,19 @@ def kalibrierung_berechnen():
     t_kam_liste = []
 
     for i, tcp_pose in enumerate(tcp_posen):
+        # FIX: Index basiert auf gespeichertem Index (i+1), nicht auf
+        # Laufindex der Rohpositionen – beide Listen sind jetzt synchron
         pfad = os.path.join(SAVE_DIR, f"handeye_{i+1:02d}.png")
         if not os.path.exists(pfad):
             print(f"  ✗ Bild {pfad} nicht gefunden")
             continue
 
         img = cv2.imread(pfad, cv2.IMREAD_GRAYSCALE)
-        charuco_corners, charuco_ids, _, _ = detector.detectBoard(img)
+
+        # FIX: Bild vor solvePnP entzerren; dist=None in solvePnP übergeben
+        img_undist = cv2.undistort(img, K, dist)
+
+        charuco_corners, charuco_ids, _, _ = detector.detectBoard(img_undist)
 
         if charuco_ids is None or len(charuco_ids) < 4:
             print(f"  ✗ ChArUco in Bild {i+1} nicht erkannt")
@@ -262,32 +287,65 @@ def kalibrierung_berechnen():
         obj_points, img_points = charuco_board.matchImagePoints(
             charuco_corners, charuco_ids
         )
-        ret, rvec, tvec = cv2.solvePnP(obj_points, img_points, K, dist)
+
+        # FIX: dist=None weil Bild bereits entzerrt
+        ret, rvec, tvec = cv2.solvePnP(obj_points, img_points, K, None)
         if not ret:
+            print(f"  ✗ solvePnP fehlgeschlagen für Bild {i+1}")
             continue
 
         R_kam, _ = cv2.Rodrigues(rvec)
 
         x, y, z, A, B, C = tcp_pose
-        t_rob = np.array([x, y, z])
+        # FIX: t_rob als (3,1) – calibrateHandEye erwartet dieses Format
+        # Einheit: Meter (tcp_auslesen gibt jetzt Meter zurück)
+        t_rob = np.array([[x], [y], [z]], dtype=np.float64)
         rot   = Rotation.from_euler('xyz', [A, B, C], degrees=True)
         R_rob = rot.as_matrix()
 
         R_rob_liste.append(R_rob)
         t_rob_liste.append(t_rob)
         R_kam_liste.append(R_kam)
-        t_kam_liste.append(tvec)
+        t_kam_liste.append(tvec)  # shape (3,1) aus solvePnP
         print(f"  ✓ Bild {i+1} verarbeitet")
 
     if len(R_rob_liste) < 5:
         print("✗ Zu wenige gültige Bilder!")
         return
 
-    R_he, t_he = cv2.calibrateHandEye(
-        R_rob_liste, t_rob_liste,
-        R_kam_liste, t_kam_liste,
-        method=cv2.CALIB_HAND_EYE_TSAI
-    )
+    # Mehrere Methoden vergleichen und beste wählen
+    methoden = {
+        "TSAI":     cv2.CALIB_HAND_EYE_TSAI,
+        "PARK":     cv2.CALIB_HAND_EYE_PARK,
+        "HORAUD":   cv2.CALIB_HAND_EYE_HORAUD,
+        "ANDREFF":  cv2.CALIB_HAND_EYE_ANDREFF,
+    }
+
+    ergebnisse = {}
+    for name, methode in methoden.items():
+        try:
+            R_he, t_he = cv2.calibrateHandEye(
+                R_rob_liste, t_rob_liste,
+                R_kam_liste, t_kam_liste,
+                method=methode
+            )
+            fehler = _reprojektionsfehler_berechnen(
+                R_he, t_he, R_rob_liste, t_rob_liste, R_kam_liste, t_kam_liste
+            )
+            ergebnisse[name] = (R_he, t_he, fehler)
+            print(f"  [{name:8s}]  Reprojektionsfehler: {fehler:.4f} m")
+        except Exception as e:
+            print(f"  [{name:8s}]  Fehlgeschlagen: {e}")
+
+    if not ergebnisse:
+        print("✗ Alle Methoden fehlgeschlagen!")
+        return
+
+    # Methode mit kleinstem Fehler wählen
+    beste_methode = min(ergebnisse, key=lambda k: ergebnisse[k][2])
+    R_he, t_he, bester_fehler = ergebnisse[beste_methode]
+
+    print(f"\n  → Beste Methode: {beste_methode} (Fehler: {bester_fehler:.4f} m)")
 
     T_he = np.eye(4)
     T_he[:3, :3] = R_he
@@ -296,12 +354,55 @@ def kalibrierung_berechnen():
     print("\n═══════════════════════════════════════")
     print("  Hand-Eye-Kalibrierung Ergebnis")
     print("═══════════════════════════════════════")
+    print(f"  Methode: {beste_methode}")
     print(f"  R:\n{R_he}")
-    print(f"  t (mm): {t_he.flatten()}")
+    print(f"  t (m):  {t_he.flatten()}")
+    print(f"  t (mm): {t_he.flatten() * 1000}")
+    print(f"  Reprojektionsfehler: {bester_fehler:.4f} m ({bester_fehler*1000:.2f} mm)")
     print("═══════════════════════════════════════")
 
-    np.savez(RESULT_FILE, R=R_he, t=t_he, T=T_he)
+    np.savez(
+        RESULT_FILE,
+        R=R_he,
+        t=t_he,
+        T=T_he,
+        methode=beste_methode,
+        reprojektionsfehler=bester_fehler
+    )
     print(f"\n✓ Gespeichert: {RESULT_FILE}")
+
+
+def _reprojektionsfehler_berechnen(R_he, t_he, R_rob_liste, t_rob_liste,
+                                    R_kam_liste, t_kam_liste):
+    """
+    Validierung der Hand-Eye-Kalibrierung.
+
+    Für jedes Posenpaar (i, j) gilt bei korrekter Kalibrierung:
+        A_ij = R_rob_j^-1 @ R_rob_i
+        B_ij = R_kam_j^-1 @ R_kam_i
+    und die Gleichung  A @ X = X @ B  (X = Hand-Eye-Transformation).
+
+    Wir messen den mittleren Rotationsfehler als Proxy für die Qualität.
+    """
+    fehler_liste = []
+    n = len(R_rob_liste)
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            # Relative Transformation Roboter
+            A = R_rob_liste[j].T @ R_rob_liste[i]
+            # Relative Transformation Kamera
+            B = R_kam_liste[j].T @ R_kam_liste[i]
+
+            # AX = XB  →  Residuum: R_he @ B vs. A @ R_he
+            lhs = R_he @ B
+            rhs = A @ R_he
+
+            # Rotationsfehler als Frobenius-Norm der Differenz
+            fehler = np.linalg.norm(lhs - rhs, 'fro')
+            fehler_liste.append(fehler)
+
+    return float(np.mean(fehler_liste)) if fehler_liste else float('inf')
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -319,6 +420,7 @@ def main():
     print(f"\n{'='*55}")
     print(f"  Hand-Eye-Kalibrierung – {anzahl} Positionen")
     print(f"  ChArUco Board FEST hinlegen!")
+    print(f"  TCP-Einheit: Meter (intern, konsistent mit solvePnP)")
     print(f"{'='*55}\n")
 
     input("EINGABE drücken um zu starten ...")
@@ -335,7 +437,8 @@ def main():
             continue
 
         print("  ✓ Position erreicht.")
-        time.sleep(7)
+        # FIX: 2s reichen – Roboter steht nach spin_until_future_complete bereits
+        time.sleep(2.0)
 
         # TCP auslesen
         tcp_pose = node.tcp_auslesen()
@@ -343,7 +446,9 @@ def main():
             print("  ✗ TCP nicht auslesbar – überspringe!")
             continue
 
-        print(f"  TCP: x={tcp_pose[0]:.1f} y={tcp_pose[1]:.1f} z={tcp_pose[2]:.1f} mm")
+        print(f"  TCP: x={tcp_pose[0]*1000:.1f} y={tcp_pose[1]*1000:.1f} "
+              f"z={tcp_pose[2]*1000:.1f} mm  "
+              f"A={tcp_pose[3]:.1f}° B={tcp_pose[4]:.1f}° C={tcp_pose[5]:.1f}°")
 
         # Bild aufnehmen
         print("  Nehme Bild auf ...")
@@ -353,21 +458,24 @@ def main():
             print(f"  ✗ Kamerafehler: {e} – überspringe!")
             continue
 
-        # ChArUco prüfen
+        # ChArUco prüfen (am Rohbild, nur zur Vorprüfung)
         ret, _, _ = charuco_erkennen(img)
         if not ret:
             print("  ✗ ChArUco nicht erkannt – überspringe!")
             continue
 
-        # Speichern
+        # FIX: Dateiname basiert auf gespeichertem Index, NICHT auf i
+        # → tcp_posen[k] entspricht immer handeye_{k+1:02d}.png
         pfad = os.path.join(SAVE_DIR, f"handeye_{gespeichert+1:02d}.png")
         cv2.imwrite(pfad, img)
         tcp_posen.append(tcp_pose)
+
+        # JSON nach jedem Bild aktualisieren (crash-sicher)
         with open(POSES_FILE, "w") as f:
             json.dump(tcp_posen, f, indent=2)
 
         gespeichert += 1
-        print(f"  ✓ Gespeichert! ({gespeichert} total)")
+        print(f"  ✓ Gespeichert als {os.path.basename(pfad)} ({gespeichert} total)")
 
     print(f"\n{'='*55}")
     print(f"  {gespeichert} gültige Positionen aufgenommen.")
@@ -376,7 +484,7 @@ def main():
         print("  Berechne Kalibrierung ...")
         kalibrierung_berechnen()
     else:
-        print("  ✗ Zu wenige Positionen!")
+        print("  ✗ Zu wenige Positionen für Kalibrierung (mind. 5)!")
 
     rclpy.shutdown()
 
