@@ -1,43 +1,36 @@
 # test_rebel_mover.py
 import math
+import time
 import rclpy
 from robo_work.rebel_mover import RebelMover
-
+from scipy.spatial.transform import Rotation as R
 
 def main():
     rclpy.init()
     mover = RebelMover()
+    gripPointPos = [0.0, -77, 138.0, 0.0, 81.0, 0.0]
+    PreGraspPos = [0.0, 25.5, 69.9, 0.0, 81.0, 0.0]
+    GraspPos = [0.0, 29.5, 67.5, 0.0, 81.0, 0.0]
+    checkLabelPos = [66, 23.6, 74.5, 0.0, 79.9, 66]
+    traySortPause1 = [66, 23.6, 74.5, 0.0, 79.9, 66]
+    traySortPause2 = [-50, -25.8, 74.5, 0.0, 80.0,-23.0]
+    trayDummy1 = [-83.5,28.0,62.6,0.0,80.0,0.0]
 
-    # ============================================================
-    # TEST 1: Home-Position anfahren
-    # ============================================================
-    
-
-    # ============================================================
-    # TEST 2: Gelenkwinkel-Test (sicher, weil bekannt)
-    # ============================================================
-    print("\n[TEST 2] Fahre Dummy-Gelenkwinkel an...")
-    # leichte Beugung – nichts wildes
-    success = mover.move_to_dummy_position([0, -79, 139, 0, 82, 0])
-    print(f"  → {'OK' if success else 'FEHLGESCHLAGEN'}")
-   
-
-    # ============================================================
-    # TEST 3: Kartesische Pose – Dummy-Greifpunkt
-    # ============================================================
-  
-    # Greifer zeigt nach unten (typische Greif-Orientierung)
-    
-
-    # ============================================================
-    # TEST 4: Pre-Grasp + Grasp (Anflug 10cm drüber, dann runter)
-    # ============================================================
-    
-
-    # ============================================================
-    # Zurück auf Home
-    # ============================================================
-   
+    mover.move_to_dummy_position(gripPointPos)
+    time.sleep(0.5)
+    mover.move_to_dummy_position(PreGraspPos)
+    time.sleep(0.5)
+    mover.move_to_dummy_position(GraspPos)
+    time.sleep(0.5)
+    mover.move_to_dummy_position(checkLabelPos)
+    time.sleep(0.5)
+    mover.move_to_dummy_position(traySortPause1)
+    time.sleep(0.5)
+    mover.move_to_dummy_position(traySortPause2)
+    time.sleep(0.5)
+    mover.move_to_dummy_position(trayDummy1)
+    time.sleep(0.5)
+    mover.move_to_dummy_position(gripPointPos)
     
 
     mover.destroy_node()

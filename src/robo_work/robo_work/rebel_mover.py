@@ -32,7 +32,7 @@ class RebelMover(Node):
         for jname, jval in zip(joint_names, joint_values):
             jc = JointConstraint()
             jc.joint_name      = jname
-            jc.position        = jval
+            jc.position        = float(jval)
             jc.tolerance_above = 0.01
             jc.tolerance_below = 0.01
             jc.weight          = 1.0
